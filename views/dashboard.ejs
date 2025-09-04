@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - File Uploader</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div>
+                <h1>📁 My Files</h1>
+                <p>Welcome back, <strong><%= user.username %></strong>!</p>
+            </div>
+            <div>
+                <a href="/logout" class="btn btn-danger">Logout</a>
+            </div>
+        </header>
+        
+        <!-- Messages -->
+        <% const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : ''); %>
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="message success"><%= message %></div>
+        <% } %>
+        
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <h3>📤 Upload File</h3>
+            <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-wrapper">
+                    <input type="file" id="file" name="file" required>
+                    <label for="file" class="file-label">
+                        <span class="file-icon">📎</span>
+                        Choose File or Drag & Drop
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-success">Upload File</button>
+            </form>
+        </section>
+        
+        <!-- Create Folder -->
+        <section class="folder-section">
+            <h3>📁 Create Folder</h3>
+            <form method="POST" action="/folder" class="folder-form">
+                <input type="text" name="name" placeholder="Enter folder name..." required>
+                <button type="submit" class="btn btn-primary">Create Folder</button>
+            </form>
+        </section>
+        
+        <!-- REPLACE the folders display section with: -->
+<% if (folders && folders.length > 0) { %>
+<section class="items-section">
+    <h3>📂 My Folders (<%= folders.length %>)</h3>
+    <div class="items-grid">
+        <% folders.forEach(folder => { %>
+        <div class="item-card folder-card" onclick="window.location.href='/folder/<%= folder.id %>'">
+            <div class="item-icon">📁</div>
+            <div class="item-info">
+                <h4><%= folder.name %></h4>
+                <small>Created: <%= new Date(folder.createdAt).toLocaleDateString() %></small>
+                <div class="item-actions" onclick="event.stopPropagation();">
+                    <a href="/folder/<%= folder.id %>" class="btn btn-small btn-primary">Open Folder</a>
+                </div>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</section>
+<% } %>
+        
+        <!-- Files Display -->
+        <section class="items-section">
+            <h3>📄 My Files (<%= files ? files.length : 0 %>)</h3>
+            <% if (!files || files.length === 0) { %>
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h4>No files yet</h4>
+                    <p>Upload your first file using the form above!</p>
+                </div>
+            <% } else { %>
+                <div class="items-grid">
+                    <% files.forEach(file => { %>
+                    <div class="item-card file-card">
+                        <div class="item-icon">
+                            <% if (file.mimetype.startsWith('image/')) { %>📷
+                            <% } else if (file.mimetype === 'application/pdf') { %>📄
+                            <% } else if (file.mimetype.includes('text')) { %>📝
+                            <% } else { %>📎<% } %>
+                        </div>
+                        <div class="item-info">
+                            <h4><%= file.filename %></h4>
+                            <p>Size: <%= (file.size / 1024 / 1024).toFixed(2) %> MB</p>
+                            <small>Uploaded: <%= new Date(file.uploadedAt).toLocaleDateString() %></small>
+                            <div class="item-actions">
+                                <a href="/download/<%= file.id %>" class="btn btn-small btn-success">Download</a>
+                                <form method="POST" action="/delete/<%= file.id %>" style="display: inline;">
+                                    <button type="submit" class="btn btn-small btn-danger" 
+                                            onclick="return confirm('Delete this file?')">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </section>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
